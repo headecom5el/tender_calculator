@@ -1,0 +1,634 @@
+<title>Тендерный калькулятор Apple</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@500;600&display=swap">
+<style>
+:root{
+  --ground:#F2F4F4; --surface:#FFFFFF; --surface-2:#E9EDED; --surface-3:#F7F9F9;
+  --ink:#12191A; --ink-2:#4E6162; --ink-3:#7C8E8F;
+  --line:#D6DEDE; --line-strong:#B9C6C6;
+  --accent:#0E6E70; --accent-soft:#DCEDED;
+  --ok:#2E6E3F; --ok-soft:#E2EFE4;
+  --warn:#8F5D0E; --warn-soft:#F6EAD1;
+  --bad:#A5372C; --bad-soft:#F7E2DF;
+  --sans:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;
+  --serif:"IBM Plex Serif",Georgia,serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ground:#0E1415; --surface:#151D1E; --surface-2:#1D2728; --surface-3:#121A1B;
+    --ink:#E7EEED; --ink-2:#A2B4B4; --ink-3:#7A8C8C;
+    --line:#263130; --line-strong:#374443;
+    --accent:#4FB5B2; --accent-soft:#12302F;
+    --ok:#77C289; --ok-soft:#17301D;
+    --warn:#D9A251; --warn-soft:#33260F;
+    --bad:#E0796B; --bad-soft:#331914;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0E1415; --surface:#151D1E; --surface-2:#1D2728; --surface-3:#121A1B;
+  --ink:#E7EEED; --ink-2:#A2B4B4; --ink-3:#7A8C8C;
+  --line:#263130; --line-strong:#374443;
+  --accent:#4FB5B2; --accent-soft:#12302F;
+  --ok:#77C289; --ok-soft:#17301D;
+  --warn:#D9A251; --warn-soft:#33260F;
+  --bad:#E0796B; --bad-soft:#331914;
+}
+*{box-sizing:border-box}
+body{background:var(--ground);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.6;
+  -webkit-font-smoothing:antialiased;padding:0 20px 96px}
+.wrap{max-width:1080px;margin:0 auto}
+.col{max-width:70ch}
+h1,h2,h3{font-family:var(--serif);text-wrap:balance;margin:0}
+h1{font-size:clamp(32px,4.4vw,46px);line-height:1.12;font-weight:600;letter-spacing:-.01em}
+h2{font-size:clamp(23px,2.6vw,29px);font-weight:600;line-height:1.2}
+h3{font-size:18px;font-weight:600}
+p{margin:0}
+a{color:var(--accent)}
+.eyebrow{font-family:var(--mono);font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)}
+
+header{padding:56px 0 40px;border-bottom:1px solid var(--line)}
+.lede{font-size:19px;line-height:1.55;color:var(--ink-2);margin-top:20px;max-width:64ch}
+.meta{display:flex;flex-wrap:wrap;gap:0 32px;margin-top:28px;font-size:13.5px;color:var(--ink-3);font-family:var(--mono)}
+.meta b{color:var(--ink-2);font-weight:500}
+
+section{padding:52px 0;border-bottom:1px solid var(--line)}
+section:last-of-type{border-bottom:0}
+.head{display:flex;flex-direction:column;gap:10px;margin-bottom:26px}
+.stack{display:flex;flex-direction:column;gap:18px}
+
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:1px;background:var(--line);
+  border:1px solid var(--line);margin:8px 0 30px}
+.tile{background:var(--surface);padding:20px 22px;display:flex;flex-direction:column;gap:6px}
+.tile .n{font-family:var(--mono);font-size:27px;font-weight:600;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.tile .t{font-size:13.5px;color:var(--ink-2);line-height:1.4}
+
+.points{display:flex;flex-direction:column;gap:0;border-top:1px solid var(--line)}
+.point{display:grid;grid-template-columns:minmax(0,1fr);gap:6px;padding:18px 0;border-bottom:1px solid var(--line)}
+@media(min-width:720px){.point{grid-template-columns:190px minmax(0,1fr);gap:28px}}
+.point .k{font-family:var(--mono);font-size:12.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-3);padding-top:3px}
+.point .v{font-size:15.5px;color:var(--ink-2);max-width:62ch}
+.point .v b{color:var(--ink);font-weight:600}
+
+figure{margin:0}
+figcaption{font-size:13px;color:var(--ink-3);margin-top:12px;font-family:var(--mono)}
+.diagram{background:var(--surface);border:1px solid var(--line);padding:22px 18px;overflow-x:auto}
+.diagram svg{display:block;min-width:840px;width:100%;height:auto}
+.svg-box{fill:var(--surface-3);stroke:var(--line-strong)}
+.svg-core{fill:var(--accent-soft);stroke:var(--accent)}
+.svg-inner{fill:var(--surface);stroke:var(--line-strong)}
+.svg-t{fill:var(--ink);font-family:var(--sans);font-size:13px;font-weight:500}
+.svg-s{fill:var(--ink-2);font-family:var(--mono);font-size:10.5px}
+.svg-l{fill:var(--ink-3);font-family:var(--mono);font-size:10px;letter-spacing:.08em}
+.svg-arrow{stroke:var(--line-strong);fill:none;stroke-width:1.5}
+.svg-arrow-a{stroke:var(--accent);fill:none;stroke-width:1.75}
+
+.mock{border:1px solid var(--line);background:var(--surface);overflow:hidden}
+.mock-bar{display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--surface-2);border-bottom:1px solid var(--line)}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--line-strong)}
+.mock-bar .path{font-family:var(--mono);font-size:11.5px;color:var(--ink-3);margin-left:8px}
+.mock-body{padding:20px}
+.mock-h{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px 16px;margin-bottom:4px}
+.mock-h .title{font-family:var(--serif);font-size:19px;font-weight:600}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin:12px 0 18px}
+.chip{font-family:var(--mono);font-size:11.5px;padding:3px 9px;border:1px solid var(--line-strong);color:var(--ink-2);white-space:nowrap}
+.chip.hi{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+
+.tblwrap{overflow-x:auto;border:1px solid var(--line)}
+table{border-collapse:collapse;width:100%;min-width:760px;font-size:13.5px}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+thead th{font-family:var(--mono);font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3);
+  background:var(--surface-3);font-weight:500;vertical-align:bottom}
+tbody tr:last-child td{border-bottom:0}
+td.num,th.num{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
+tr.win td{background:var(--ok-soft)}
+tr.blocked td{background:var(--bad-soft);color:var(--ink-2)}
+.badge{font-family:var(--mono);font-size:11px;padding:2px 7px;border-radius:2px;white-space:nowrap}
+.b-ok{background:var(--ok-soft);color:var(--ok);border:1px solid var(--ok)}
+.b-warn{background:var(--warn-soft);color:var(--warn);border:1px solid var(--warn)}
+.b-bad{background:var(--bad-soft);color:var(--bad);border:1px solid var(--bad)}
+.rank{font-family:var(--mono);color:var(--ink-3);font-size:12px}
+
+.panel{margin-top:20px;border:1px solid var(--line);background:var(--surface-3);padding:18px 20px}
+.panel h4{margin:0 0 14px;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ink-3);font-weight:500}
+.chain{display:flex;flex-direction:column;gap:0;font-size:13.5px}
+.chain .row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;padding:7px 0;border-bottom:1px dashed var(--line)}
+.chain .row:last-child{border-bottom:0;border-top:1px solid var(--line-strong);margin-top:4px;padding-top:11px;font-weight:600}
+.chain .op{font-family:var(--mono);color:var(--ink-3);font-size:12px}
+.chain .val{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.foot{font-size:12.5px;color:var(--ink-3);margin-top:12px}
+
+.phone{width:320px;max-width:100%;border:1px solid var(--line-strong);border-radius:22px;overflow:hidden;background:var(--surface);
+  box-shadow:0 14px 34px rgba(0,0,0,.10)}
+.tg-bar{background:var(--surface-2);padding:12px 16px;border-bottom:1px solid var(--line);display:flex;
+  align-items:center;justify-content:space-between}
+.tg-bar .n{font-size:14px;font-weight:600}
+.tg-bar .c{font-family:var(--mono);font-size:11px;color:var(--ink-3)}
+.tg-body{padding:16px;display:flex;flex-direction:column;gap:14px}
+.prog{display:flex;flex-direction:column;gap:6px}
+.prog .lab{display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;color:var(--ink-3)}
+.bar{height:4px;background:var(--surface-2);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);width:53%}
+.item{border:1px solid var(--line);padding:12px}
+.item.err{border-color:var(--bad)}
+.item .nm{font-size:13.5px;font-weight:600;line-height:1.3}
+.item .req{font-family:var(--mono);font-size:11px;color:var(--ink-3);margin-top:3px}
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:11px}
+.f{display:flex;flex-direction:column;gap:3px}
+.f.wide{grid-column:1/-1}
+.f label{font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
+.f .inp{border:1px solid var(--line-strong);background:var(--surface);padding:6px 8px;font-family:var(--mono);
+  font-size:12.5px;color:var(--ink)}
+.f .inp.bad{border-color:var(--bad);color:var(--bad)}
+.f .inp.ph{color:var(--ink-3)}
+.hint{font-size:11.5px;color:var(--bad);margin-top:8px;line-height:1.35}
+.btn{background:var(--accent);color:#fff;text-align:center;padding:11px;font-size:14px;font-weight:600}
+:root[data-theme="dark"] .btn,:root:not([data-theme="light"]) .btn{color:#08201F}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]) .btn{color:#fff}}
+.mockrow{display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start}
+.mockrow .side{flex:1 1 320px;min-width:280px}
+
+.est{width:100%;min-width:600px}
+.est td.num{font-weight:500}
+tr.sum td{border-top:1px solid var(--line-strong);font-weight:600;background:var(--surface-3)}
+.scen{display:grid;gap:1px;background:var(--line);border:1px solid var(--line);margin-top:24px}
+@media(min-width:860px){.scen{grid-template-columns:repeat(3,1fr)}}
+.sc{background:var(--surface);padding:20px;display:flex;flex-direction:column;gap:10px}
+.sc.pick{background:var(--accent-soft)}
+.sc .lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+.sc.pick .lbl{color:var(--accent)}
+.sc .t{font-family:var(--serif);font-size:17px;font-weight:600}
+.sc .d{font-size:14px;color:var(--ink-2);line-height:1.5}
+.sc .term{font-family:var(--mono);font-size:13px;color:var(--ink);margin-top:auto;padding-top:8px}
+.callout{border-left:3px solid var(--accent);background:var(--surface);padding:16px 20px;margin:24px 0;font-size:15px;
+  color:var(--ink-2);max-width:70ch}
+.callout b{color:var(--ink)}
+ol.q{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:10px;font-size:15.5px;color:var(--ink-2);max-width:66ch}
+ol.q b{color:var(--ink);font-weight:600}
+footer{padding:36px 0 0;font-size:13px;color:var(--ink-3);font-family:var(--mono)}
+</style>
+
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">Записка к решению · управление e-commerce · 07.09.2026</div>
+  <h1 style="margin-top:14px">Тендерный калькулятор Apple</h1>
+  <p class="lede">Сервис, который забирает у категорийного менеджера ручную рассылку запросов девяти
+    трейдерам, ручное сведение их ответов и ручной расчёт себестоимости по девяти разным формулам.
+    Ниже — как он устроен, как выглядит, во что обойдётся и кому его делать.</p>
+  <div class="meta">
+    <span><b>Основание:</b> задача от 17.08.2026</span>
+    <span><b>Вопрос к решению:</b> исполнитель и сроки</span>
+    <span><b>Оценка:</b> верхняя граница</span>
+  </div>
+</header>
+
+<section>
+  <div class="head">
+    <div class="eyebrow">Масштаб</div>
+    <h2>О каких деньгах речь</h2>
+  </div>
+  <div class="tiles">
+    <div class="tile"><span class="n">1 730 шт</span><span class="t">в одном тендере — 17 позиций,
+      заявка от 04.08.2026</span></div>
+    <div class="tile"><span class="n">$1,35 млн</span><span class="t">объём этого тендера по таргетам
+      закупки</span></div>
+    <div class="tile"><span class="n">9</span><span class="t">трейдеров, и у каждого своя цепочка
+      курсов и надбавок</span></div>
+    <div class="tile"><span class="n">0,07 %</span><span class="t">разрыв между первым и вторым
+      предложением в реальном расчёте</span></div>
+  </div>
+  <p class="col" style="color:var(--ink-2);font-size:15.5px">Последняя цифра — главная. Победитель
+    определяется долями процента, а считается это вручную, в таблице, где под каждого трейдера
+    написана отдельная формула. Цена ошибки в такой формуле выше, чем цена самой ошибки: она
+    приводит к выбору не того поставщика на объёме в миллион с лишним долларов.</p>
+</section>
+
+<section>
+  <div class="head">
+    <div class="eyebrow">Как сейчас</div>
+    <h2>Четыре ручных этапа</h2>
+  </div>
+  <div class="points">
+    <div class="point">
+      <div class="k">Рассылка</div>
+      <div class="v">Менеджер заполняет Excel-шаблон и вручную отправляет его в девять отдельных
+        Telegram-чатов. Общая таблица запрещена: <b>трейдеры не должны видеть предложения друг
+        друга</b>.</div>
+    </div>
+    <div class="point">
+      <div class="k">Сбор</div>
+      <div class="v">Девять файлов приходят в девять чатов, менеджер открывает каждый и переносит
+        данные в общую сводную. Файлы приходят грязными: цена вписана как <span class="chip">$825</span>,
+        а в поле итоговой цены встречается <span class="chip">$1425 - orange, $1450 - silver</span>.</div>
+    </div>
+    <div class="point">
+      <div class="k">Нотификация</div>
+      <div class="v">По каждой модели менеджер вручную ищет запись в реестре ЕАЭС, пробуя латинскую
+        и кириллическую «А». <b>Заказ без нотификации нельзя продать в РБ</b> — партия зависает.</div>
+    </div>
+    <div class="point">
+      <div class="k">Расчёт</div>
+      <div class="v">Себестоимость считается девятью разными формулами: у каждого трейдера свой
+        источник курса (НБ РБ, ЦБ РФ, инвестинг), своя надбавка и своя логистика. Курс одного из них
+        вписан в формулу числом.</div>
+    </div>
+  </div>
+  <div class="callout">
+    <b>Найденная ошибка.</b> В рабочем файле от 25.06 надбавка 0,5 % у Angel Trade учтена дважды —
+    и в курсе, и коэффициентом к цене. Это 15 BYN на единице товара при том, что разрыв между
+    первым и вторым местом составляет 2 BYN. На позиции в 320 штук — 4 800 BYN и другой победитель.
+    Ошибка такого рода в таблице не видна никому.
+  </div>
+</section>
+
+<section>
+  <div class="head">
+    <div class="eyebrow">Что предлагается</div>
+    <h2>Как устроен сервис</h2>
+  </div>
+  <p class="col" style="color:var(--ink-2);font-size:15.5px;margin-bottom:26px">Трейдер остаётся в
+    своём Telegram-чате и ничего нового не осваивает — бот сам присылает ему запрос и сам забирает
+    ответ. Менеджер работает в веб-кабинете: видит поступление ответов, готовую сводную с
+    себестоимостью в белорусских рублях и маржой к целевой РРЦ. Курсы, ставки сборов и проверка
+    нотификаций подтягиваются автоматически, каждый расчёт сохраняется целиком и воспроизводится
+    задним числом.</p>
+
+  <figure>
+    <div class="diagram">
+      <svg viewBox="0 0 1000 470" role="img" aria-label="Схема сервиса: трейдеры, сервис, кабинет менеджера">
+        <!-- external sources top -->
+        <rect class="svg-box" x="286" y="8" width="122" height="42" rx="3"/>
+        <text class="svg-t" x="347" y="27" text-anchor="middle">НБ РБ · ЦБ РФ</text>
+        <text class="svg-s" x="347" y="42" text-anchor="middle">курсы валют</text>
+        <rect class="svg-box" x="424" y="8" width="130" height="42" rx="3"/>
+        <text class="svg-t" x="489" y="27" text-anchor="middle">Реестр ЕАЭС</text>
+        <text class="svg-s" x="489" y="42" text-anchor="middle">нотификации</text>
+        <rect class="svg-box" x="570" y="8" width="128" height="42" rx="3"/>
+        <text class="svg-t" x="634" y="27" text-anchor="middle">Курс инвестинга</text>
+        <text class="svg-s" x="634" y="42" text-anchor="middle">ввод КМ, 11:00</text>
+        <path class="svg-arrow" d="M347 50 L347 96" marker-end="url(#ar)"/>
+        <path class="svg-arrow" d="M489 50 L489 96" marker-end="url(#ar)"/>
+        <path class="svg-arrow" d="M634 50 L634 96" marker-end="url(#ar)"/>
+
+        <!-- traders -->
+        <rect class="svg-box" x="8" y="120" width="196" height="196" rx="3"/>
+        <text class="svg-l" x="24" y="142">ТРЕЙДЕРЫ · 9</text>
+        <rect class="svg-inner" x="24" y="154" width="164" height="30" rx="2"/>
+        <text class="svg-t" x="36" y="173">Inonics trading</text>
+        <rect class="svg-inner" x="24" y="190" width="164" height="30" rx="2"/>
+        <text class="svg-t" x="36" y="209">Tech Planet FZCO</text>
+        <rect class="svg-inner" x="24" y="226" width="164" height="30" rx="2"/>
+        <text class="svg-t" x="36" y="245">Noviva DWC</text>
+        <text class="svg-s" x="36" y="274">…и ещё шесть</text>
+        <text class="svg-s" x="24" y="300">личный чат, изоляция</text>
+
+        <!-- arrows traders <-> service -->
+        <path class="svg-arrow-a" d="M204 186 L286 186" marker-end="url(#ara)"/>
+        <text class="svg-s" x="245" y="178" text-anchor="middle">запрос</text>
+        <path class="svg-arrow-a" d="M286 236 L204 236" marker-end="url(#ara)"/>
+        <text class="svg-s" x="245" y="228" text-anchor="middle">предложение</text>
+
+        <!-- service core -->
+        <rect class="svg-core" x="286" y="96" width="412" height="290" rx="4"/>
+        <text class="svg-l" x="302" y="118">СЕРВИС</text>
+        <rect class="svg-inner" x="302" y="130" width="380" height="52" rx="2"/>
+        <text class="svg-t" x="316" y="152">Приём и разбор ответов</text>
+        <text class="svg-s" x="316" y="169">типы, обязательные поля, отчёт об ошибке трейдеру</text>
+        <rect class="svg-inner" x="302" y="192" width="380" height="52" rx="2"/>
+        <text class="svg-t" x="316" y="214">Расчёт себестоимости</text>
+        <text class="svg-s" x="316" y="231">надбавка → курс → BYN → сборы → маржа к РРЦ</text>
+        <rect class="svg-inner" x="302" y="254" width="380" height="52" rx="2"/>
+        <text class="svg-t" x="316" y="276">Тендер, раунды торга, распределение объёма</text>
+        <text class="svg-s" x="316" y="293">сравнение, блокировки, предложение по закупке</text>
+        <rect class="svg-inner" x="302" y="316" width="380" height="52" rx="2"/>
+        <text class="svg-t" x="316" y="338">История и аудит</text>
+        <text class="svg-s" x="316" y="355">файлы, курсы на дату, расчёты, кто и что решил</text>
+
+        <!-- manager -->
+        <path class="svg-arrow-a" d="M698 240 L790 240" marker-end="url(#ara)"/>
+        <rect class="svg-box" x="790" y="120" width="200" height="196" rx="3"/>
+        <text class="svg-l" x="806" y="142">КАБИНЕТ МЕНЕДЖЕРА</text>
+        <rect class="svg-inner" x="806" y="154" width="168" height="26" rx="2"/>
+        <text class="svg-t" x="818" y="171">Потребность и таргет</text>
+        <rect class="svg-inner" x="806" y="186" width="168" height="26" rx="2"/>
+        <text class="svg-t" x="818" y="203">Кто уже ответил</text>
+        <rect class="svg-inner" x="806" y="218" width="168" height="26" rx="2"/>
+        <text class="svg-t" x="818" y="235">Сводная и решение</text>
+        <rect class="svg-inner" x="806" y="250" width="168" height="26" rx="2"/>
+        <text class="svg-t" x="818" y="267">Архив тендеров</text>
+        <text class="svg-s" x="806" y="296">доступ только у КМ</text>
+
+        <!-- bottom integrations -->
+        <rect class="svg-box" x="286" y="412" width="196" height="46" rx="3" stroke-dasharray="4 3"/>
+        <text class="svg-t" x="384" y="432" text-anchor="middle">1С:УТ</text>
+        <text class="svg-s" x="384" y="448" text-anchor="middle">остатки, транзит, заказ</text>
+        <rect class="svg-box" x="502" y="412" width="196" height="46" rx="3" stroke-dasharray="4 3"/>
+        <text class="svg-t" x="600" y="432" text-anchor="middle">Qlik Sense</text>
+        <text class="svg-s" x="600" y="448" text-anchor="middle">продажи, целевая РРЦ</text>
+        <path class="svg-arrow" d="M384 412 L384 386" marker-end="url(#ar)" stroke-dasharray="4 3"/>
+        <path class="svg-arrow" d="M600 412 L600 386" marker-end="url(#ar)" stroke-dasharray="4 3"/>
+        <text class="svg-l" x="712" y="440">ВТОРАЯ ОЧЕРЕДЬ</text>
+
+        <defs>
+          <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0 0 L10 5 L0 10 z" fill="var(--line-strong)"/>
+          </marker>
+          <marker id="ara" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0 0 L10 5 L0 10 z" fill="var(--accent)"/>
+          </marker>
+        </defs>
+      </svg>
+    </div>
+    <figcaption>Пунктиром — интеграции второй очереди: без них сервис работает, потребность и РРЦ
+      вводятся руками.</figcaption>
+  </figure>
+</section>
+
+<section>
+  <div class="head">
+    <div class="eyebrow">Экран 1 из 2 · макет</div>
+    <h2>Что видит менеджер</h2>
+  </div>
+  <p class="col" style="color:var(--ink-2);font-size:15.5px;margin-bottom:22px">Одна позиция тендера,
+    все предложения в одной таблице, себестоимость сразу в белорусских рублях. Рядом — разложение
+    цифры по шагам: менеджер видит ту же цепочку, которую сегодня считает руками, и потому может
+    ей верить. Позиция без нотификации подсвечена и заблокирована к выбору.</p>
+
+  <div class="mock">
+    <div class="mock-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span>
+      <span class="path">tender.patio.by / тендер 26-08-04 / позиция 6 из 17</span></div>
+    <div class="mock-body">
+      <div class="mock-h">
+        <span class="title">Смартфон Apple iPhone 17 256GB · Black</span>
+        <span class="rank">артикул Патио 1029447</span>
+      </div>
+      <div class="chips">
+        <span class="chip">Потребность 320 шт</span>
+        <span class="chip">Нужен на ЦС 15.09</span>
+        <span class="chip">Таргет $840</span>
+        <span class="chip">Целевая РРЦ 3 799 BYN</span>
+        <span class="chip hi">Раунд 2 · ответили 7 из 9</span>
+      </div>
+
+      <div class="tblwrap">
+        <table>
+          <thead>
+            <tr>
+              <th></th><th>Трейдер</th><th>Базис</th><th>Оплата</th>
+              <th class="num">Доступно</th><th class="num">Цена, $</th><th>ETA на ЦС</th>
+              <th class="num">с/с с НДС, BYN</th><th class="num">Маржа</th><th>Нотификация</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="win">
+              <td class="rank">1</td><td>Noviva DWC</td><td>EXW Dubai</td><td>20/80</td>
+              <td class="num">320</td><td class="num">825,00</td><td>14.09</td>
+              <td class="num">2 978,22</td><td class="num">21,6 %</td>
+              <td><span class="badge b-ok">найдена</span></td>
+            </tr>
+            <tr>
+              <td class="rank">2</td><td>Inonics trading</td><td>CIP Минск</td><td>100 %</td>
+              <td class="num">320</td><td class="num">843,00</td><td>12.09</td>
+              <td class="num">2 980,24</td><td class="num">21,6 %</td>
+              <td><span class="badge b-ok">найдена</span></td>
+            </tr>
+            <tr>
+              <td class="rank">3</td><td>Angel Trade</td><td>DAP Минск</td><td>50/50</td>
+              <td class="num">200</td><td class="num">851,00</td><td>18.09</td>
+              <td class="num">2 993,39</td><td class="num">21,2 %</td>
+              <td><span class="badge b-warn">частично 200 из 320</span></td>
+            </tr>
+            <tr>
+              <td class="rank">4</td><td>KVN Group (Бигап)</td><td>EXW Dubai</td><td>20/80</td>
+              <td class="num">320</td><td class="num">848,00</td><td>11.09</td>
+              <td class="num">3 053,07</td><td class="num">19,6 %</td>
+              <td><span class="badge b-ok">найдена</span></td>
+            </tr>
+            <tr>
+              <td class="rank">5</td><td>Al Shiva General</td><td>EXW Dubai</td><td>70/30</td>
+              <td class="num">150</td><td class="num">835,00</td><td>19.09</td>
+              <td class="num">3 076,34</td><td class="num">19,0 %</td>
+              <td><span class="badge b-warn">срок позже нужной даты</span></td>
+            </tr>
+            <tr class="blocked">
+              <td class="rank">—</td><td>HuaXun Group</td><td>CIP Минск</td><td>20/80</td>
+              <td class="num">320</td><td class="num">858,00</td><td>28.09</td>
+              <td class="num">3 133,09</td><td class="num">17,5 %</td>
+              <td><span class="badge b-bad">не найдена · выбор закрыт</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="panel">
+        <h4>Как получилась себестоимость · Noviva DWC</h4>
+        <div class="chain">
+          <div class="row"><span>Цена предложения</span><span class="val">825,00 $</span></div>
+          <div class="row"><span>Конвертация RUB → AED, 1,25 % <span class="op">× 1,0125</span></span><span class="val">835,31 $</span></div>
+          <div class="row"><span>Логистика до ЦС, базис EXW <span class="op">+ 7,00</span></span><span class="val">842,31 $</span></div>
+          <div class="row"><span>Курс USD → RUB, ЦБ РФ на 26.06 <span class="op">× 75,6347</span></span><span class="val">63 707 ₽</span></div>
+          <div class="row"><span>Курс RUB → BYN, НБ РБ на 26.06 <span class="op">× 0,0377</span></span><span class="val">2 401,79 BYN</span></div>
+          <div class="row"><span>НДС 20 % и утильсбор 3 % <span class="op">× 1,24</span></span><span class="val">2 978,22 BYN</span></div>
+          <div class="row"><span>Себестоимость с НДС · маржа к РРЦ 21,6 %</span><span class="val">2 978,22 BYN</span></div>
+        </div>
+        <p class="foot">Стоимость денег по схеме 20/80 и страхование считаются отдельными строками —
+          в макете свёрнуты. Курсы и ставки взяты из рабочего файла от 25.06.2026.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="head">
+    <div class="eyebrow">Экран 2 из 2 · макет</div>
+    <h2>Что видит трейдер</h2>
+  </div>
+  <div class="mockrow">
+    <div class="side">
+      <p style="color:var(--ink-2);font-size:15.5px">Форма открывается прямо в Telegram, по кнопке
+        из чата. Логина и пароля нет — трейдер уже опознан своим аккаунтом.</p>
+      <div class="points" style="margin-top:20px">
+        <div class="point"><div class="k">Типы полей</div><div class="v">Цена принимает только
+          число. Символ «$» и запись «1425 — orange, 1450 — silver» отклоняются в момент ввода, а не
+          при разборе файла у нас.</div></div>
+        <div class="point"><div class="k">Обязательные</div><div class="v">Модель и номер
+          нотификации нельзя пропустить — сегодня их не заполняет никто, и проверять нечего.</div></div>
+        <div class="point"><div class="k">Изоляция</div><div class="v">Трейдер видит только свои
+          строки. Ни цен, ни имён других участников в интерфейсе не существует.</div></div>
+        <div class="point"><div class="k">Excel остаётся</div><div class="v">Кто не хочет форму —
+          отправляет файл в чат как раньше, бот его примет и разберёт.</div></div>
+      </div>
+    </div>
+    <figure>
+      <div class="phone">
+        <div class="tg-bar"><span class="n">Патио · Тендер 26-08-04</span><span class="c">до 18:00</span></div>
+        <div class="tg-body">
+          <div class="prog">
+            <div class="lab"><span>Заполнено</span><span>9 из 17 позиций</span></div>
+            <div class="bar"><i></i></div>
+          </div>
+
+          <div class="item">
+            <div class="nm">iPhone 17 256GB · Black</div>
+            <div class="req">нужно 320 шт · таргет $840</div>
+            <div class="fields">
+              <div class="f"><label>Доступно, шт</label><div class="inp">320</div></div>
+              <div class="f"><label>Цена, USD</label><div class="inp">825</div></div>
+              <div class="f"><label>Модель</label><div class="inp">A3294</div></div>
+              <div class="f"><label>Страна</label><div class="inp">Vietnam</div></div>
+              <div class="f wide"><label>Нотификация</label><div class="inp">BY/112 2405.01 03442</div></div>
+              <div class="f"><label>SIM</label><div class="inp">1</div></div>
+              <div class="f"><label>eSIM</label><div class="inp">1</div></div>
+              <div class="f wide"><label>Приход на ЦС Минск</label><div class="inp">14.09.2026</div></div>
+            </div>
+          </div>
+
+          <div class="item err">
+            <div class="nm">iPhone 17 Pro Max 512GB</div>
+            <div class="req">нужно 100 шт · таргет $1 424</div>
+            <div class="fields">
+              <div class="f"><label>Доступно, шт</label><div class="inp">100</div></div>
+              <div class="f"><label>Цена, USD</label><div class="inp bad">$1425 — orange</div></div>
+            </div>
+            <div class="hint">Цена — одно число без валюты. Если цвета стоят по-разному, добавьте
+              строку для каждого цвета кнопкой ниже.</div>
+          </div>
+
+          <div class="item">
+            <div class="nm">iPhone Air 256GB · Sky Blue</div>
+            <div class="req">нужно 40 шт · таргет $840</div>
+            <div class="fields">
+              <div class="f"><label>Доступно, шт</label><div class="inp ph">0 — нет в наличии</div></div>
+              <div class="f"><label>Цена, USD</label><div class="inp ph">—</div></div>
+            </div>
+          </div>
+
+          <div class="btn">Отправить предложение</div>
+        </div>
+      </div>
+      <figcaption>Telegram Mini App, форма трейдера</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section>
+  <div class="head">
+    <div class="eyebrow">Оценка · верхняя граница</div>
+    <h2>Сколько это стоит сделать</h2>
+  </div>
+  <p class="col" style="color:var(--ink-2);font-size:15.5px;margin-bottom:22px">Оценка намеренно
+    жёсткая: по каждому блоку взят пессимистичный сценарий, сверху добавлен буфер 30 % на
+    неопределённость внешних систем. Реальный срок вероятнее ближе к нижней границе, но планировать
+    предлагаю по этой.</p>
+
+  <div class="tblwrap">
+    <table class="est">
+      <thead><tr><th>Блок работ</th><th>Что входит</th><th class="num">Чел-дни</th></tr></thead>
+      <tbody>
+        <tr><td>Справочники и расчётное ядро</td><td>условия девяти трейдеров, схемы оплаты,
+          ставки сборов, курсы, движок с разложением по шагам, сверка на исторических тендерах</td><td class="num">7</td></tr>
+        <tr><td>Приём и разбор данных</td><td>разбор заполненных файлов, нормализация грязных
+          значений, генерация персональных запросов, отчёт об ошибках трейдеру</td><td class="num">6</td></tr>
+        <tr><td>Telegram</td><td>бот: регистрация чатов, рассылка, приём, статусы, напоминания;
+          Mini App с формой и валидацией</td><td class="num">10</td></tr>
+        <tr><td>Проверка нотификаций ЕАЭС</td><td>разведка реестра, запрос в двух раскладках,
+          кэш, сохранение подтверждения, блокировка позиции</td><td class="num">7</td></tr>
+        <tr><td>Хранилище и доступы</td><td>база, история тендеров и раундов, роли, вход через
+          корпоративную учётную запись, журнал действий</td><td class="num">13</td></tr>
+        <tr><td>Кабинет менеджера</td><td>потребность, мониторинг ответов, сводная, разложение
+          себестоимости, распределение объёма, архив</td><td class="num">11</td></tr>
+        <tr><td>Запуск</td><td>развёртывание, обкатка на живом тендере, доработки по итогам,
+          инструкции менеджерам и трейдерам</td><td class="num">9</td></tr>
+        <tr class="sum"><td>Итого</td><td>без буфера</td><td class="num">63</td></tr>
+        <tr class="sum"><td>Жёсткая оценка</td><td>с буфером 30 % на внешние системы</td><td class="num">82</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="scen">
+    <div class="sc">
+      <div class="lbl">Вариант А</div>
+      <div class="t">Целиком в R&amp;D</div>
+      <div class="d">Отдел получает ТЗ и делает всё. Риск в том, что модель себестоимости —
+        знание коммерции, а не разработки: что 1,5 % это комиссия агента при выставлении счёта,
+        а 1,25 % — конвертация рублей в дирхамы, в ТЗ не написано.</div>
+      <div class="term">82 чел-дня · 2–2,5 месяца командой</div>
+    </div>
+    <div class="sc">
+      <div class="lbl">Вариант Б</div>
+      <div class="t">Целиком в управлении e-com</div>
+      <div class="d">Мы знаем предметную область, но сервер, резервные копии, доступы и дежурство —
+        не наша зона ответственности. Тянуть эксплуатацию внутренним ресурсом управления неправильно.</div>
+      <div class="term">82 чел-дня · 4 месяца одним человеком</div>
+    </div>
+    <div class="sc pick">
+      <div class="lbl">Вариант В · предлагаю</div>
+      <div class="t">Разделить по компетенции</div>
+      <div class="d">Управление e-com делает справочники и расчётное ядро с проверкой на прошлых
+        тендерах — 13 чел-дней. R&amp;D получает на вход не текст ТЗ, а работающую и сверенную
+        бизнес-логику, и делает вокруг неё сервис.</div>
+      <div class="term">13 у нас · 69 в R&amp;D · 1,5–2 месяца</div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <b>Почему предлагаю вариант В.</b> Самый дорогой риск проекта — не сроки разработки, а
+    неправильная формула себестоимости: её ошибку никто не заметит, а решение о закупке на
+    миллион с лишним долларов будет принято по ней. Проверка на прошлых тендерах снимает этот риск
+    до того, как написана первая строка сервиса, и стоит две недели работы одного человека.
+  </div>
+</section>
+
+<section>
+  <div class="head">
+    <div class="eyebrow">Риски</div>
+    <h2>Где оценка может поехать</h2>
+  </div>
+  <div class="points">
+    <div class="point"><div class="k">Реестр ЕАЭС</div><div class="v">Неизвестно, отдаёт ли портал
+      данные машине. Если нет — проверка делается разбором страницы, это <b>плюс 4 дня</b> и
+      постоянная поддержка при изменениях портала. Проверяется за один день разведки.</div></div>
+    <div class="point"><div class="k">Дисциплина трейдеров</div><div class="v">Если трейдеры не
+      начнут заполнять модель и нотификацию, автопроверка останется без входных данных. Решается
+      обязательными полями в форме и договорённостью, а не кодом.</div></div>
+    <div class="point"><div class="k">Ставки сборов</div><div class="v">Множитель 1,24 в текущем
+      файле — компромисс, а не выведенная величина, и он не совпадает с соседними формулами.
+      Нужна фиксация ставок финансовой службой, иначе <b>расчёт нечем принимать</b>.</div></div>
+    <div class="point"><div class="k">Курс инвестинга</div><div class="v">Публичного источника нет,
+      трейдеры оперируют «курсом на 11:00». Вводится вручную раз в день — это осознанное решение,
+      а не недоработка.</div></div>
+    <div class="point"><div class="k">Инфраструктура</div><div class="v">Нужны сервер, токен бота и
+      права администратора в девяти чатах. Организационно, но без этого не стартует ни один
+      вариант.</div></div>
+  </div>
+</section>
+
+<section>
+  <div class="head">
+    <div class="eyebrow">Решение</div>
+    <h2>Что нужно от руководства</h2>
+  </div>
+  <ol class="q">
+    <li><b>Исполнитель и вариант.</b> А, Б или В. Предлагаю В.</li>
+    <li><b>Владелец продукта.</b> Кто принимает результат и расставляет приоритеты — предлагаю
+      управление e-commerce.</li>
+    <li><b>Ставки сборов от финансовой службы.</b> Пошлина по категориям, НДС, утильсбор,
+      гарантийный сбор — и что применяем при расчёте на торги.</li>
+    <li><b>Актуальный список трейдеров.</b> В задаче девять, в своде условий восемь, в ТЗ семь.</li>
+    <li><b>Сервер и токен бота.</b> Где размещаем и кто выдаёт доступы.</li>
+  </ol>
+  <p class="col" style="color:var(--ink-2);font-size:15.5px;margin-top:24px">По пунктам 1 и 2
+    решение нужно до старта. Пункты 3–5 нужны к концу первого блока работ и не блокируют начало:
+    расчётное ядро сверяется с прошлыми тендерами на тех ставках, которые в них фактически
+    применялись.</p>
+</section>
+
+<footer>
+  Управление e-commerce · ЗАО «ПАТИО» · оценка от 07.09.2026 · цифры в записке рассчитаны на
+  данных заявки 04.08.2026 и сводной 25.06.2026
+</footer>
+
+</div>
